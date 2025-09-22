@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico de Instagram V1.1</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  .container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 550px;
+    position: relative;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .progress-bar {
+    width: 100%;
+    background: #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 12px;
+    margin-bottom: 20px;
+  }
+
+  .progress {
+    height: 12px;
+    background: #4CAF50;
+    width: 0;
+    transition: width 0.4s ease;
+  }
+
+  .question {
+    display: none;
+    animation: fadeIn 0.5s;
+    margin-bottom: 20px;
+  }
+
+  .question.active {
+    display: block;
+  }
+
+  button {
+    background: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s;
+  }
+
+  button:hover {
+    background: #45a049;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  .result {
+    display: none;
+  }
+
+  #recommendations {
+    white-space: pre-line;
+    margin-top: 15px;
+  }
+
+  #feedback {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #ff5722;
+    min-height: 22px;
+  }
+
+  @keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Diagnóstico de Instagram V1.1</h2>
+  <div class="progress-bar">
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <div id="feedback"></div>
+
+  <!-- Perguntas -->
+  <div class="question active" data-index="0">
+    <p><strong>Presença Digital</strong></p>
+    <p>1. Quantos seguidores você tem no Instagram?</p>
+    <input type="number" id="q0" placeholder="Ex: 8100">
+    <button onclick="nextQuestion()">Próximo</button>
+  </div>
+
+  <div class="question" data-index="1">
+    <p>2. Qual a média de curtidas nos últimos 9 posts?</p>
+    <input type="number" id="q1" placeholder="Ex: 250">
+    <button onclick="nextQuestion()">Próximo</button>
+  </div>
+
+  <div class="question" data-index="2">
+    <p>3. Seus posts recebem comentários ou DMs regularmente?</p>
+    <button onclick="answerQuestion(2, 0)">Nunca</button>
+    <button onclick="answerQuestion(2, 5)">Algumas vezes</button>
+    <button onclick="answerQuestion(2, 10)">Frequentemente</button>
+  </div>
+
+  <div class="question" data-index="3">
+    <p><strong>Engajamento e Alcance</strong></p>
+    <p>4. Seus seguidores são do público-alvo que você quer atingir?</p>
+    <button onclick="answerQuestion(3, 0)">Não</button>
+    <button onclick="answerQuestion(3, 5)">Parcialmente</button>
+    <button onclick="answerQuestion(3, 10)">Sim</button>
+  </div>
+
+  <div class="question" data-index="4">
+    <p>5. Você usa Instagram Shopping / Catálogo?</p>
+    <button onclick="answerQuestion(4, 0)">Não</button>
+    <button onclick="answerQuestion(4, 5)">Parcialmente</button>
+    <button onclick="answerQuestion(4, 10)">Sim</button>
+  </div>
+
+  <div class="question" data-index="5">
+    <p><strong>Marketing e Conversão</strong></p>
+    <p>6. Quantos clientes novos você consegue por mês via Instagram?</p>
+    <input type="number" id="q5" placeholder="Ex: 8">
+    <button onclick="nextQuestion()">Próximo</button>
+  </div>
+
+  <div class="question" data-index="6">
+    <p>7. Você possui estratégia de tráfego pago ou parcerias?</p>
+    <button onclick="answerQuestion(6, 0)">Não</button>
+    <button onclick="answerQuestion(6, 5)">Parcial</button>
+    <button onclick="answerQuestion(6, 10)">Sim</button>
+  </div>
+
+  <div class="question" data-index="7">
+    <p><strong>Negócio e Operacional</strong></p>
+    <p>8. Você possui sistema de agenda, CRM e controle financeiro?</p>
+    <button onclick="answerQuestion(7, 0)">Não</button>
+    <button onclick="answerQuestion(7, 5)">Parcial</button>
+    <button onclick="answerQuestion(7, 10)">Sim</button>
+  </div>
+
+  <div class="question" data-index="8">
+    <p>9. Seu ticket médio está alinhado com o valor percebido pelos clientes?</p>
+    <button onclick="answerQuestion(8, 0)">Não</button>
+    <button onclick="answerQuestion(8, 5)">Parcial</button>
+    <button onclick="answerQuestion(8, 10)">Sim</button>
+  </div>
+
+  <!-- Resultado -->
+  <div class="result" id="result">
+    <h2>Resultado do Diagnóstico</h2>
+    <p id="scoreText"></p>
+    <div id="recommendations"></div>
+    <button onclick="downloadPDF()">Baixar Relatório (PDF)</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+let current = 0;
+const answers = [];
+
+function nextQuestion() {
+  const input = document.getElementById('q'+current);
+  let value = parseInt(input.value);
+  if(isNaN(value)) value = 0;
+  answers.push(value);
+  showFeedback(current, value);
+  showNext();
+}
+
+function answerQuestion(index, value) {
+  answers.push(value);
+  showFeedback(index, value);
+  showNext();
+}
+
+function showNext() {
+  document.querySelector('.question.active').classList.remove('active');
+  current++;
+  const questions = document.querySelectorAll('.question');
+  if(current < questions.length) {
+    questions[current].classList.add('active');
+    document.getElementById('progress').style.width = ((current) / questions.length)*100 + '%';
+  } else {
+    document.getElementById('progress').style.width = '100%';
+    showResult();
+  }
+}
+
+function showFeedback(index, value) {
+  let feedback = "";
+  switch(index){
+    case 0:
+      if(value < 2000) feedback = "Seguidores baixos, aumente presença digital.";
+      else if(value < 5000) feedback = "Seguidores médios, continue crescendo.";
+      else feedback = "Ótimo número de seguidores!";
+      break;
+    case 1:
+      feedback = (value/answers[0]*100 || 0) < 2 ? "Engajamento muito baixo!" : "Engajamento aceitável.";
+      break;
+    case 2:
+      feedback = value>=10 ? "Muito bom engajamento nos comentários/DMs!" : "Pouco engajamento direto.";
+      break;
+    case 3:
+      feedback = value<10 ? "Seu público não está totalmente alinhado." : "Ótimo público-alvo!";
+      break;
+    case 4:
+      feedback = value<10 ? "Considere usar Instagram Shopping/Catálogo." : "Você já usa o catálogo.";
+      break;
+    case 5:
+      feedback = value<5 ? "Poucos clientes novos via Instagram." : "Bom fluxo de novos clientes.";
+      break;
+    case 6:
+      feedback = value<10 ? "Invista em tráfego pago ou parcerias." : "Ótima estratégia!";
+      break;
+    case 7:
+      feedback = value<10 ? "Implante CRM e agenda online." : "Controle operacional adequado.";
+      break;
+    case 8:
+      feedback = value<10 ? "Revise precificação para valor percebido." : "Preço alinhado com valor!";
+      break;
+  }
+  document.getElementById('feedback').innerText = feedback;
+}
+
+function showResult() {
+  const totalScore = calculateScore();
+  document.getElementById('scoreText').innerText = `Score: ${totalScore} / 100`;
+  document.getElementById('recommendations').innerText = generateRecommendations();
+  document.querySelector('.result').style.display = 'block';
+}
+
+function calculateScore() {
+  let score = 0;
+  if(answers[0] >= 5000) score += 10;
+  else if(answers[0] >= 2000) score += 5;
+  else score += 2;
+
+  let engagementRate = (answers[1]/answers[0])*100 || 0;
+  if(engagementRate >= 5) score += 10;
+  else if(engagementRate >= 2) score += 5;
+  else score += 2;
+
+  if(answers[5] >= 10) score += 10;
+  else if(answers[5] >= 5) score += 5;
+  else score += 2;
+
+  score += answers[2]+answers[3]+answers[4]+answers[6]+answers[7]+answers[8];
+
+  return Math.min(score, 100);
+}
+
+function generateRecommendations() {
+  const engagementRate = (answers[1]/answers[0])*100 || 0;
+  let recs = "**Presença Digital & Engajamento**\n";
+  if(engagementRate < 2) recs += "- Engajamento muito baixo. Produza conteúdo interativo.\n";
+  else if(engagementRate < 5) recs += "- Engajamento médio. Busque aumentar comentários e salvamentos.\n";
+  else recs += "- Ótimo engajamento!\n";
+
+  if(answers[3]<10) recs += "- Público-alvo não está bem definido. Foque nos clientes certos.\n";
+  if(answers[4]<10) recs += "- Use Instagram Shopping/Catálogo para facilitar conversões.\n";
+
+  recs += "\n**Marketing & Conversão**\n";
+  if(answers[6]<10) recs += "- Invista em tráfego pago e parcerias estratégicas.\n";
+  if(answers[5]<5) recs += "- Poucos clientes novos via Instagram. Otimize captação.\n";
+
+  recs += "\n**Negócio & Operacional**\n";
+  if(answers[7]<10) recs += "- Implante CRM e agenda online para fidelização.\n";
+  if(answers[8]<10) recs += "- Revise precificação para alinhar valor percebido.\n";
+
+  return recs;
+}
+
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text("Diagnóstico de Instagram V1.1", 20, 20);
+  doc.setFontSize(12);
+  doc.text(document.getElementById('scoreText').innerText, 20, 35);
+
+  const recommendations = generateRecommendations().split("\n");
+  let y = 50;
+  recommendations.forEach(line => {
+    if(line.startsWith("**") && line.endsWith("**")) {
+      doc.setFont(undefined, 'bold');
+      doc.text(line.replace(/\*\*/g, ''), 20, y);
+      doc.setFont(undefined, 'normal');
+    } else if(line.trim() !== "") {
+      doc.text(line, 20, y);
+    }
+    y += 7;
+    if(y > 280){
+      doc.addPage();
+      y = 20;
+    }
+  });
+
+  doc.save("diagnostico_instagram_v1.1.pdf");
+}
+</script>
